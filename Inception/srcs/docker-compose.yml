@@ -1,0 +1,64 @@
+version: '3.5'
+
+services:
+  nginx:
+    build: ./requirements/nginx
+    image: images/nginx
+    ports:
+      - "443:443"
+    depends_on:
+      - wordpress
+    volumes:
+     - wordpress_data:/var/www/html
+    networks:
+      - webnet
+    restart: always
+   
+    
+
+  wordpress:
+    image: images/wordpress
+    ports:
+      - '9000:9000'
+    build: ./requirements/wordpress
+    volumes:
+     - wordpress_data:/var/www/html
+    networks:
+      - webnet
+    depends_on:
+      - mariadb
+    env_file:
+      - .env
+    restart: always
+
+  mariadb:
+    image: images/mariadb
+    ports:
+      - '3306:3306'
+    build:  ./requirements/mariadb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - webnet
+    env_file:
+      - .env
+    restart: always
+
+networks:
+  webnet:
+    driver: bridge
+    name: webnet
+
+volumes: 
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/dborgian/data/wordpress_data
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/dborgian/data/mariadb_data
